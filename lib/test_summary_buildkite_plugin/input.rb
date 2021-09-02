@@ -38,7 +38,7 @@ module TestSummaryBuildkitePlugin
         @files ||= begin
           FileUtils.mkpath(WORKDIR)
           Agent.run('artifact', 'download', artifact_path, WORKDIR)
-          Dir.glob("#{WORKDIR}/#{artifact_path}")
+          Dir.glob("#{WORKDIR}/#{artifact_path.gsub("\\", "/")}")
         rescue Agent::CommandFailed => err
           handle_error(err)
           []
