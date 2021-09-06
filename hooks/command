@@ -3,8 +3,6 @@
 
 set -eEuo pipefail
 
-DOCKER_REPO=bergholmm/test-summary-buildkite-plugin
-
 on_failure() {
     echo "Command failed with exit status: $?"
     if [[ "${BUILDKITE_PLUGIN_TEST_SUMMARY_FAIL_ON_ERROR:-false}" != "true" ]]; then
@@ -17,18 +15,12 @@ trap on_failure ERR
 
 # cd to plugin directory
 cd "$( dirname "${BASH_SOURCE[0]}" )/.."
-TAG=$(git describe --tags --exact-match 2> /dev/null || true)
 
-if [[ -n "$TAG" ]]; then
-    echo "Found tag $TAG, pulling from docker hub"
-    IMAGE="$DOCKER_REPO:$TAG"
-    docker pull "$IMAGE"
-else
-    echo "No tag found, building image locally"
-    IMAGE=test-summary:$BUILDKITE_JOB_ID
-    docker build -t "$IMAGE" .
-fi
+echo "Building image"
+IMAGE=test-summary-buildkite-plugin
+docker build -t "$IMAGE" .
 
+echo "Running image"
 docker run --rm \
   --mount type=bind,src=$(which buildkite-agent),dst=/usr/bin/buildkite-agent \
   --mount type=bind,src=/tmp,dst=/tmp \
